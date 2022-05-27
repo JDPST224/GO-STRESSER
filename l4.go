@@ -121,7 +121,9 @@ func attack() {
 			for i := 0; i < 140; i++ {
 				s.Write([]byte(request))
 			}
+			s.Close()
 		}
+		s.Close()
 	}
 }
 
