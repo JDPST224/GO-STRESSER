@@ -89,7 +89,7 @@ func getheader() string {
 	referer := "Referer: " + "https://" + ip + "/" + "\r\n"
 	accept := acceptall[rand.Intn(len(acceptall))]
 	useragent := "User-Agent: " + useragent() + "\r\n"
-	forwarded := "X-Forwarded-For: " + strconv.Itoa(rand.Intn(2000)) + "\r\n"
+	forwarded := "X-Forwarded-For: " + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + "\r\n"
 	header := connection + useragent + accept + forwarded + referer + "\r\n"
 	return header
 }
